@@ -1,15 +1,14 @@
 ---
-title: "My title"
-subtitle: "My subtitle if needed"
+title: "Determining Success in the Video Game Industry"
 author: 
-  - First author
-  - Another author
-thanks: "Code and data are available at: LINK."
+  - Sakhil Goel
+thanks: "Code and data are available at: https://github.com/Sakhil-Goel/Game-Success.git."
 date: today
 date-format: long
 abstract: "First sentence. Second sentence. Third sentence. Fourth sentence."
 format: pdf
 number-sections: true
+toc: true
 bibliography: references.bib
 ---
 
