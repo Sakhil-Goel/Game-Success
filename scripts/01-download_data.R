@@ -13,10 +13,9 @@ library(jsonlite)
 library(dplyr)
 library(tidyverse)
 library(arrow)
-# [...UPDATE THIS...]
 
 #### Download data ####
-# [...ADD CODE HERE TO DOWNLOAD...]
+
 # Set API Key and base URL
 api_key <- "1cc3d3380bcc4835b4989f5a0e241499"
 base_url <- "https://api.rawg.io/api/games"
@@ -45,12 +44,10 @@ while (current_page <= total_pages) {
     df_games <- do.call(rbind, lapply(data$results, function(x) data.frame(
       name = x$name,
       released = x$released,
-      rating = ifelse(is.null(x$rating), NA, x$rating),
       platforms = toString(sapply(x$platforms, function(p) p$platform$name)),
       genres = toString(sapply(x$genres, function(g) g$name)),
       metacritic = ifelse(is.null(x$metacritic), NA, x$metacritic),
       playtime = ifelse(is.null(x$playtime), NA, x$playtime)
-      #esrb_rating = ifelse(is.null(x$esrb_rating), NA, x$esrb_rating$rating_slug)
     )))
     
     # Combine current page data with the previous pages
@@ -65,17 +62,9 @@ while (current_page <= total_pages) {
   }
 }
 
-# Write to Parquet file
-write.csv(game_data, "data/raw_data/game_data.csv")
-
-
-#games_clean <- games_df %>%
-#  select(name, released, rating, platforms, genres) %>%
-#  filter(!is.na(rating))  # Filter out games without ratings
-
 #### Save data ####
-# [...UPDATE THIS...]
-# change the_raw_data to whatever name you assigned when you downloaded it.
+write.csv(game_data, "data/raw_data/game_data.csv", row.names = FALSE)
+
 
 
          
