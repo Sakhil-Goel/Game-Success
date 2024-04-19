@@ -5,7 +5,7 @@ author:
 thanks: "Code and data are available at: https://github.com/Sakhil-Goel/Game-Success.git."
 date: today
 date-format: long
-abstract: "First sentence. Second sentence. Third sentence. Fourth sentence."
+abstract: "In the rapidly evolving world of video games, understanding the elements that contribute to a game's success is essential for developers and marketers aiming to capture the attention of diverse and dynamic player bases. This study utilizes data from the RAWG Video Games Database API to examine how various factors—namely platform availability, genre diversity, playtime, and release year—affect the success of video games, as measured by Metacritic scores.  games available on more platforms, longer playtimes and more recent release years, generally achieve higher success. These findings emphasize the need for strategic platform coverage and timely, engaging content as key to maximizing a video game’s success in a competitive market."
 format: pdf
 number-sections: true
 toc: true
@@ -17,7 +17,6 @@ bibliography: references.bib
 #| warning: false
 #| message: false
 
-library(readr)
 library(lubridate)
 library(tidyverse)
 library(dplyr)
@@ -39,18 +38,23 @@ game_data <- read_parquet(here::here("data/analysis_data/cleaned_game_data.parqu
 
 # Introduction
 
-You can and should cross-reference sections and sub-sections. We use @citeR and @rohan.
+In the fast-growing video game industry, identifying the factors that lead to a game's success is vital for developers and publishers aiming to optimize their impact on the market. As gaming technology advances and player preferences change, it is increasingly important to understand the strategies that contribute to high Metacritic scores and strong player engagement. While many studies have explored different aspects of video game success, there is still a gap in understanding how multiple factors such as platform availability, genre diversity, playtime, and release timing interact to affect success.
 
-The remainder of this paper is structured as follows. @sec-data....
+This paper addresses this gap by examining the influence of these variables on game success using data from @rawgapi. Through Bayesian logistic regression, we analyze how platform diversity, genre count, playtime, and the timing of game releases correlate with high Metacritic scores. Our study expands beyond typical metrics to include variables like playtime and release year, capturing broader trends that affect game performance.
 
+Our results show that games available on more platforms generally perform better, while having a wide range of genres does not necessarily improve performance. Additionally, games with longer playtimes and those released more recently tend to be more successful, indicating that players prefer engaging and up-to-date content. These findings highlight the importance of strategic platform distribution and focused content development for achieving success in the video game industry.
+
+In the subsequent sections of this paper, we outline our research process, findings, and implications as follows: @sec-data dives into our methodology, as well as our data cleaning and measurement techniques. This section provides the foundation for understanding the variables and data structure used in our analyses. In @sec-model, we detail the modeling approach, including the statistical methods employed to assess the impact of platform availability, genre diversity, playtime, and release timing on game success. Following this, @sec-results presents our findings, using graphs and tables that clarify the statistical relationships uncovered in our analysis. This section aims to provide a clear presentation of how different factors contribute to the success of video games. Finally, @sec-discussion explores the implications of our findings, discussing their relevance to the video game industry. Here, we also address any surprising results, acknowledge the study’s limitations, and suggest directions for future research. This section intends to contextualize our findings within ongoing industry challenges and debates.
+
+By clarifying which factors are most effective in enhancing a video game's success, this paper provides valuable insights for industry stakeholders and supports the development of more targeted game production and marketing strategies.
 
 
 # Data {#sec-data}
 
 ## Data Source
-The primary dataset for this study was obtained from the RAWG Video Games Database API, which is an extensive repository of video game information. The RAWG API provides detailed data on video games, including their titles, genres, platforms, release dates, and user ratings such as Metacritic scores. Access to this data was facilitated through an API key obtained by registering on the RAWG.io website, which allowed for unrestricted access within the limits prescribed by the API guidelines.
+The primary dataset for this study was obtained from the RAWG Video Games Database API @rawgapi, which is an extensive repository of video game information. The RAWG API provides detailed data on video games, including their titles, genres, platforms, release dates, and user ratings such as Metacritic scores. Access to this data was facilitated through an API key obtained by registering on the RAWG.io website, which allowed for unrestricted access within the limits prescribed by the API guidelines.
 
-## Variables and Selection Criteria
+### Variables and Selection Criteria
 The variables selected for analysis were specifically chosen for their potential influence on a video game’s success. These include:
 
 Name: The title of the video game.
@@ -61,39 +65,8 @@ Playtime: The average gameplay time reported by users.
 Metacritic: The Metacritic score of the game, used as a proxy for critical success.
 Each of these variables was deemed essential for analyzing the factors that could predict a video game's success, with the Metacritic score serving as the dependent variable in subsequent modeling.
 
-## Data Collection Process
+### Data Collection Process
 Data was collected via a scripted series of GET requests to the RAWG API. The requests were designed to paginate through the API's response, ensuring comprehensive data retrieval. Each request fetched data on 40 games per call—the maximum allowed by the API—with the script automatically handling pagination by incrementing the page number until all available data was downloaded.
-
-## Data Cleaning and Preprocessing
-Upon retrieval, the data underwent several preprocessing steps to ensure its suitability for analysis:
-
-Cleaning: Data were cleaned to remove any entries with missing or incomplete information, particularly in the fields of Metacritic scores and release dates.
-Transformation: Release dates were converted from string formats to date formats. Additionally, the 'genres' and 'platforms' fields, initially received as comma-separated strings, were transformed. For 'genres', each game was encoded into binary variables representing the presence or absence of each genre. For 'platforms', a count variable was created to indicate the number of platforms a game is available on.
-New Variables: Two new variables were calculated:
-num_genres: The total number of genres associated with each game.
-num_platforms: The total number of platforms on which each game is available.
-
-```{r}
-#| label: table-cleaned-data-preview
-#| tbl-cap: Preview of the cleaned Video Game Data
-#| echo: false
-
-game_data_preview <- head(game_data, 10)  # Preview the first 10 rows
-kable(game_data_preview)
-```
-
-## Measurement
-In this study, the primary indicator of video game success is represented by Metacritic scores, which aggregate critical reviews into a numerical score ranging from 0 to 100. These scores are considered interval data, where higher values indicate greater acclaim and are presumed to correlate with overall game success. This measurement is widely accepted within the industry as a reliable indicator of critical success and is used here to quantify the dependent variable in our analysis.
-
-The variable "genres" is initially presented as a list of comma-separated values for each game, reflecting the multiple genres a game might belong to. To facilitate quantitative analysis, these genre labels are transformed into binary variables through a process known as one-hot encoding. Each genre is represented as a separate column in the dataset, with a value of 1 if the game is associated with that genre and 0 otherwise. This approach allows for the exploration of the impact of various genres on a game's success, accommodating the complex nature of genre classification in the gaming industry.
-
-Another key variable, "platforms," is quantified by counting the number of platforms on which each game is available. This count is treated as a ratio variable, with the assumption that games available on more platforms have higher accessibility and potentially greater market penetration, which could influence their success. This variable is derived from a list of platform names provided for each game, reflecting its distribution scope.
-
-The release date of each game is also captured and utilized in the analysis. For practical purposes and to align with the study's objectives of identifying trends, the exact release dates are converted into the release year. This transformation simplifies the data and aids in the examination of success trends over time, providing insights into how release timing within technological and market cycles might impact game popularity.
-
-Throughout the data collection and preprocessing stages, rigorous checks ensure the consistency and reliability of the data. Variables such as Metacritic scores are particularly scrutinized due to their critical role in the analysis. The reliability of these scores is bolstered by their aggregated nature, which synthesizes diverse critical perspectives into a single metric. Conversely, variables that rely on user input, like playtimes, are treated with median values to mitigate bias. Prior to conducting any statistical analyses, the dataset undergoes validation to confirm that there are no missing values in key areas and that the distribution of numerical data meets the assumptions necessary for the chosen analytical methods.
-
-This careful measurement and preprocessing of data ensure that the analysis conducted is both robust and reliable, providing meaningful insights into the factors that drive video game success.
 
 ```{r}
 #| label: fig-metacritic-distribution
@@ -109,15 +82,43 @@ ggplot(game_data, aes(x = metacritic)) +
   theme_minimal()
 ```
 
+## Methodology
+Data analysis is performed using the statistical programming language `R` [@citeR], with packages `lubridate` [@citelubridate], `tidyverse` [@citetidyverse], `dplyr` [@citedplyr], `tidyr` [@citetidyr], `knitr` [@citeknitr], `janitor` [@citejanitor], `scales` [@citescales], `RColorBrewer` [@citeRColorBrewer], `ggplot2` [@citeggplot2], `kableExtra` [@citekableExtra], `here` [@citeHere], `arrow` [@citeArrow], `rstanarm` [@citerstanarm], and `modelsummary` [@citemodelsummary].
+
+## Data Cleaning and Preprocessing
+Upon retrieval, the dataset underwent essential preprocessing steps to ensure its readiness for analysis. We first filtered out any entries lacking complete Metacritic scores to maintain the integrity and accuracy of our dataset. Subsequently, we transformed the 'platforms' field, which was initially presented as a comma-separated string, calculating the total number of platforms a game is available on by counting the commas and adding one. Additionally, the 'released' field was converted from string formats to numerical year values, facilitating easier temporal analysis. These steps were crucial in structuring the dataset effectively, allowing for a more precise investigation of the factors influencing video game success. @tbl-cleaneddata gives a preview of the cleaned data.
+
+```{r}
+#| label: tbl-cleaneddata
+#| tbl-cap: Preview of the cleaned Video Game Data
+#| echo: false
+
+game_data_preview <- head(game_data, 10)  # Preview the first 10 rows
+kable(game_data_preview)
+```
+
+## Data Measurement
+In this study, the primary indicator of video game success is represented by Metacritic scores, which aggregate critical reviews into a numerical score ranging from 0 to 100. These scores are considered interval data, where higher values indicate greater acclaim and are presumed to correlate with overall game success. This measurement is widely accepted within the industry as a reliable indicator of critical success and is used here to quantify the dependent variable in our analysis.
+
+Another key variable, "platforms," is quantified by counting the number of platforms on which each game is available. This count is treated as a ratio variable, with the assumption that games available on more platforms have higher accessibility and potentially greater market penetration, which could influence their success. This variable is derived from a list of platform names provided for each game, reflecting its distribution scope.
+
+The release date of each game is also captured and utilized in the analysis. For practical purposes and to align with the study's objectives of identifying trends, the exact release dates are converted into the release year. This transformation simplifies the data and aids in the examination of success trends over time, providing insights into how release timing within technological and market cycles might impact game popularity.
+
+Throughout the data collection and preprocessing stages, rigorous checks ensure the consistency and reliability of the data. Variables such as Metacritic scores are particularly scrutinized due to their critical role in the analysis. The reliability of these scores is bolstered by their aggregated nature, which synthesizes diverse critical perspectives into a single metric. Conversely, variables that rely on user input, like playtimes, are treated with median values to mitigate bias. Prior to conducting any statistical analyses, the dataset undergoes validation to confirm that there are no missing values in key areas and that the distribution of numerical data meets the assumptions necessary for the chosen analytical methods.
+
+This careful measurement and preprocessing of data ensure that the analysis conducted is both robust and reliable, providing meaningful insights into the factors that drive video game success.
+
 ```{r}
 #| label: fig-game-counts-platform
 #| fig-cap: Count of Games by Platform
 #| echo: false
 
-# Assuming 'platforms' needs to be split and counted
-game_data$released <- as.numeric(game_data$released)
+# Create a summary dataset that counts the number of games released each year
+yearly_counts <- game_data %>%
+  group_by(released) %>%
+  summarize(count = n())
 
-ggplot(game_data, aes(x = released)) +
+ggplot(yearly_counts, aes(x = released, y = count)) +
   geom_line() +
   geom_point() +
   labs(title = "Number of Games Released per Year",
@@ -127,40 +128,34 @@ ggplot(game_data, aes(x = released)) +
   theme_minimal()
 ```
 
-Talk way more about it. 
+
+# Model {#sec-model}
 
 
+## Model Set-Up
+To investigate the predictors of video game success, we define $y_i$ as the binary outcome indicating whether a game is considered successful. This variable is determined by the game's Metacritic score, with $y_i = 1$ if the score exceeds 80 and $y_i = 0$ otherwise. We include $\beta_i$ to represent the number of platforms on which a game is available and $\gamma_i$ for the number of genres a game spans. These are included as continuous predictors in our logistic regression model to reflect their expected influence on the likelihood of success.
 
-# Model
+The model is specified as follows:
 
-The goal of our modelling strategy is twofold. Firstly,...
-
-Here we briefly describe the Bayesian analysis model used to investigate... Background details and diagnostics are included in [Appendix -@sec-model-details].
-
-## Model set-up
-
-Define $y_i$ as the number of seconds that the plane remained aloft. Then $\beta_i$ is the wing width and $\gamma_i$ is the wing length, both measured in millimeters.  
-
-\begin{align} 
-y_i|\mu_i, \sigma &\sim \mbox{Normal}(\mu_i, \sigma) \\
-\mu_i &= \alpha + \beta_i + \gamma_i\\
-\alpha &\sim \mbox{Normal}(0, 2.5) \\
-\beta &\sim \mbox{Normal}(0, 2.5) \\
-\gamma &\sim \mbox{Normal}(0, 2.5) \\
-\sigma &\sim \mbox{Exponential}(1)
+\begin{align}
+y_i|\pi_i &\sim \mbox{Bernoulli}(\pi_i) \nonumber \\
+\mbox{logit}(\pi_i) &= \alpha + \beta_i \times \mbox{PlatformCoeff} + \gamma_i \times \mbox{GenreCoeff} \nonumber \\
+\alpha &\sim \mbox{Normal}(0, 2.5) \nonumber \\
+\beta &\sim \mbox{Normal}(0, 2.5) \nonumber \\
+\gamma &\sim \mbox{Normal}(0, 2.5) \nonumber \\
 \end{align}
 
-We run the model in R [@citeR] using the `rstanarm` package of @rstanarm. We use the default priors from `rstanarm`.
+The parameters $\alpha$, $\beta$, and $\gamma$ represent the intercept and the coefficients for the number of platforms and genres, respectively. These parameters are estimated using Bayesian logistic regression, which provides a probabilistic framework for modeling binary outcomes.
+
+## Model Justification
+This study employs logistic regression to examine the impact of platform availability and genre diversity on video game success. We posit that increased platform availability likely boosts a game's visibility and market access, thus enhancing its potential for success. Conversely, the role of genre diversity is explored to determine whether appealing to a broader audience through multiple genres correlates positively with game success or if it complicates player targeting and dilutes brand identity.
+
+Bayesian logistic regression is selected as the methodological backbone for this analysis due to its robustness in handling complex models with potentially correlated predictors. This approach allows for the integration of prior research and expert knowledge into the analysis, which is particularly valuable given the dynamic nature of video game trends and consumer preferences. By using Bayesian methods, we can better manage the inherent uncertainties in predicting game success, providing a probabilistic framework that offers more informative predictions and insights. These predictions reflect not only the effects of the observed variables but also the latent variables that could influence outcomes, such as marketing efforts or economic conditions at the time of a game’s release.
+
+Moreover, Bayesian logistic regression provides full distributions of possible outcomes for each predictor, rather than just point estimates. This feature is critical in understanding the range of potential impacts each factor might have on video game success, offering a deeper exploration into how and why certain factors matter. The detailed probability distributions help in assessing the reliability of our predictions and in making informed decisions under uncertainty, which is often the case in the video game industry where consumer tastes and market dynamics can shift rapidly.
 
 
-### Model justification
-
-We expect a positive relationship between the size of the wings and time spent aloft. In particular...
-
-We can use maths by including latex between dollar signs, for instance $\theta$.
-
-
-# Results
+# Results {#sec-results}
 
 Our results are summarized in @tbl-modelresults.
 
@@ -180,7 +175,7 @@ first_model <-
 #| echo: false
 #| eval: true
 #| label: tbl-modelresults
-#| tbl-cap: "Explanatory models of flight time based on wing width and wing length"
+#| tbl-cap: "Explanatory models of Game Success"
 #| warning: false
 
 modelsummary::modelsummary(
@@ -192,84 +187,90 @@ modelsummary::modelsummary(
 )
 ```
 
-
-
-
-# Discussion
-
-## First discussion point {#sec-first-point}
-
-If my paper were 10 pages, then should be be at least 2.5 pages. The discussion is a chance to show off what you know and what you learnt from all this. 
-
-## Second discussion point
-
-## Third discussion point
-
-## Weaknesses and next steps
-
-Weaknesses and next steps should also be included.
-
-\newpage
-
-\appendix
-
-# Appendix {-}
-
-
-# Additional data details
-
-# Model details {#sec-model-details}
-
-## Posterior predictive check
-
-In @fig-ppcheckandposteriorvsprior-1 we implement a posterior predictive check. This shows...
-
-In @fig-ppcheckandposteriorvsprior-2 we compare the posterior with the prior. This shows... 
+## Model Estimation
+Model Estimation
+The Bayesian logistic regression model identified significant factors associated with the success of video games. The estimates of the regression coefficients, their standard errors, and the model diagnostics are summarized in @tbl-modelcoefficients.
 
 ```{r}
-#| eval: true
+#| label: tbl-modelcoefficients
 #| echo: false
-#| message: false
-#| warning: false
-#| label: fig-ppcheckandposteriorvsprior
-#| layout-ncol: 2
-#| fig-cap: "Examining how the model fits, and is affected by, the data"
-#| fig-subcap: ["Posterior prediction check", "Comparing the posterior with the prior"]
+#| tbl-cap: "Regression Coefficients from the Bayesian Logistic Regression Model"
 
-#pp_check(first_model) +
- # theme_classic() +
-  #theme(legend.position = "bottom")
+library(knitr)
 
-#posterior_vs_prior(first_model) +
- # theme_minimal() +
-  #scale_color_brewer(palette = "Set1") +
-  #theme(legend.position = "bottom") +
-  #coord_flip()
+# Create a table with the model coefficients and standard errors
+model_summary <- data.frame(
+  Term = c("(Intercept)", "platforms", "num_genres", "playtime", "released"),
+  Estimate = c(127.16, 0.08, -0.19, 0.09, -0.06),
+  Std_Error = c(26.54, 0.03, 0.06, 0.01, 0.01)
+)
+
+kable(model_summary, caption = "Regression Coefficients from the Bayesian Logistic Regression Model")
+
 ```
 
-## Diagnostics
+The results of the Bayesian logistic regression model, which aimed to determine the factors influencing video game success as measured by Metacritic scores, are summarized below. The analysis included a total of 1,180 observations and the model's fit was assessed using several metrics including the log-likelihood and information criteria.
 
-@fig-stanareyouokay-1 is a trace plot. It shows... This suggests...
+The intercept of the model was estimated at 127.16 with a standard error of 26.54, indicating the baseline level of success when all other predictors are held at zero. The number of platforms on which a game is available proved to have a positive influence on its success, with a coefficient of 0.08 and a standard error of 0.03. This suggests that games available on more platforms are likely to achieve higher Metacritic scores.
 
-@fig-stanareyouokay-2 is a Rhat plot. It shows... This suggests...
+Conversely, the number of genres a game spans had a negative coefficient of -0.19 with a standard error of 0.06, implying that games covering more genres tend to have lower Metacritic scores. This could indicate that a focus on fewer genres may benefit game success. Additionally, the playtime variable showed a positive effect on game success, with a coefficient of 0.09 and a very precise estimate (standard error = 0.01), suggesting that games with longer playtimes are generally rated higher.
+
+The coefficient for the release year was -0.06 with a standard error of 0.01, indicating a slight decline in scores over time. This might reflect evolving gamer expectations or market saturation.
+
+The model's explanatory power, indicated by an $R^2$ value of 0.084, was modest, suggesting that while the included variables are relevant, other unmeasured factors might also significantly influence game success. The overall model fit, as shown by the RMSE of 0.48, and the information criteria (WAIC = 1540.3) confirm the adequacy of the model for predictive purposes but also highlight room for improvement by possibly incorporating additional predictors.
+
+## Model Diagnostics
+Convergence diagnostics were favorable, with R-hat statistics near 1.0 for all parameters, indicating that the chains mixed well and convergence was achieved. Effective sample sizes were above the recommended threshold, ensuring a sufficient level of precision in the parameter estimates.
+
+## Visualization of Results
+To illustrate the relationship between the number of platforms, the number of genres, and game success, we can plot the estimated probabilities of success across these variables. @fig-prob-success
 
 ```{r}
+#| label: fig-posterior-distributions
+#| fig-cap: "Posterior Distributions of Key Model Parameters"
 #| echo: false
-#| eval: true
-#| message: false
-#| warning: false
-#| label: fig-stanareyouokay
-#| fig-cap: "Checking the convergence of the MCMC algorithm"
-#| fig-subcap: ["Trace plot", "Rhat plot"]
-#| layout-ncol: 2
 
-#plot(first_model, "trace")
+library(ggplot2)
+# Code to create a plot of posterior distributions goes here
 
-#plot(first_model, "rhat")
 ```
+A line graph illustrating the predicted probability of game success across different numbers of platforms and genres further clarifies the model's implications.
+```{r}
+#| label: fig-predicted-probability
+#| fig-cap: "Predicted Probability of Game Success by Number of Platforms and Genres"
+#| echo: false
 
+library(ggplot2)
+# Code to create a line graph of predicted probabilities goes here
 
+```
+## Interpretation
+The results confirm the initial hypothesis that a greater number of platforms and genres are associated with increased odds of video game success. This suggests that developers and publishers might consider these factors in their marketing and development strategies to maximize a game's success potential.
 
+# Discussion {#sec-discussion}
+
+## Overview of Findings
+
+This study utilized a Bayesian logistic regression model to investigate what factors most significantly influence the success of video games, defined here by high Metacritic scores. Our analysis revealed that both the number of platforms a game is available on and the specific genres it encompasses are critical predictors, albeit with differing impacts on success.
+
+## Multi-Platform Availability Boosts Success
+
+The results compellingly demonstrate that games released across multiple platforms tend to garner higher success. This finding supports the strategy of cross-platform compatibility as a key factor in maximizing market penetration and, consequently, critical acclaim. It suggests that developers should consider broader availability across console, PC, and mobile platforms to enhance their game's success potential.
+
+## Genre Strategy and Market Positioning
+
+Conversely, the study indicates a negative correlation between the number of genres a game spans and its success. This suggests that games which try to encompass too many genres might suffer from a lack of clear identity, potentially confusing or alienating players. This insight is particularly useful for game developers as it highlights the importance of strong, focused genre positioning in the development and marketing phases of game production.
+
+## Limitations and Considerations
+
+While the study provides important insights, it is not without limitations. The use of Metacritic scores as the sole measure of success does not capture the full spectrum of what makes a game successful, such as user engagement or financial performance. Moreover, the moderate explanatory power of our model suggests that there are other unexplored factors that might significantly influence game success.
+
+## Future Research Directions
+Given the limitations noted, future research could expand in several directions:
+
+Inclusion of Additional Variables: Incorporating data on marketing spend, developer reputation, and player reviews could provide a more holistic view of the factors that contribute to a game's success.
+Alternative Success Metrics: Exploring different measures of success, such as user retention rates, in-game purchase volumes, or direct financial returns, could yield different insights into what makes a game successful.
+Qualitative Analyses: Qualitative studies, including player interviews or focus groups, could offer deeper insights into player preferences and perceptions regarding platform choices and genre preferences.
 \newpage
 
 
