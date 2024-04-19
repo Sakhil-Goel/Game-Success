@@ -20,5 +20,4 @@ cleaned_data <- raw_data %>%
     released = year(as.Date(released, format = "%Y-%m-%d")),
   )
 #### Save data ####
-write.csv(cleaned_data, "data/analysis_data/cleaned_game_data.csv")
 write_parquet(cleaned_data, "data/analysis_data/cleaned_game_data.parquet")

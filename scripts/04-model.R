@@ -21,8 +21,6 @@ analysis_data <- read_parquet(file = "data/analysis_data/cleaned_game_data.parqu
 analysis_data <- analysis_data %>%
   mutate(
     num_genres = str_count(genres, pattern = ",") + 1,
-    num_platforms = str_count(platforms, pattern = ",") + 1,
-    release_year = year(as.Date(released, format = "%Y-%m-%d")),
     success = as.numeric(metacritic > 80)  # Creating a binary success variable directly
   )
 
@@ -34,7 +32,7 @@ analysis_data |>
 ### Model data ####
 first_model <- 
   stan_glm(
-    success ~ num_platforms + num_genres + playtime + release_year,
+    success ~ platforms + num_genres + playtime + released,
     family = binomial(link = "logit"),  # Use logistic regression
     data = analysis_data,
     prior = normal(location = 0, scale = 2.5, autoscale = TRUE),
