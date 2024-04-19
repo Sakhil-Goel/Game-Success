@@ -1,16 +1,16 @@
-# Determining Success in the Video Game Industry
+# Exploring the Key Factors That Drive Success in the Video Game Industry
 
 ## Overview
 
 This paper aims to analyze factors contributing to the commercial success of video games. Using data from the RAWG Video Games Database API, we explore how various attributes such as genre, platform, playtime, and release year affect a game's success, defined by its Metacritic score.
 
-## Fetching Data
+## Accessing the Data
 
-This repo uses the RAWG API to obtain video game information in order to create the dataset.
-Here are the steps needed to access the data:
+The raw data used in this paper are obtained from the RAWG API.
+The steps needed to access the data from the RAWG API are as follows:
 1. Create an account on https://rawg.io/
 2. Find your API key using https://rawg.io/apidocs
-3. In the `01-download_data.R` script, enter your API key into the API key variable
+3. In the `01-download_data.R` script, enter your API key into the `api_key` variable
 
 ## File Structure
 
@@ -26,4 +26,4 @@ The repo is structured as:
 
 ## Statement on LLM usage
 
-The abstract and introduction were written with the help of ChatGPT and the entire chat history is available in inputs/llms/usage.txt.
+The abstract and introduction were written with the help of ChatGPT and the entire chat history is available in other/llm/usage.txt.
